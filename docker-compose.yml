@@ -1,0 +1,10 @@
+services:
+  cnn_pneumonia_detection:
+    build: .
+    image: cnn_pneumonia_detection
+    container_name: cnn_pneumonia_detection_container
+    #restart: unless-stopped
+    volumes:
+      - .:/service
+    ports:
+      - 127.0.0.1:9003:8000
