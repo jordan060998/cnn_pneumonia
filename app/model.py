@@ -1,34 +1,18 @@
-from keras.applications.efficientnet import preprocess_input as pre_efficientnetb0
-from keras.applications.densenet import preprocess_input as pre_densenet121
-from keras import models
-import keras, logging
-
-def configure_logging():
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        force=True  # 🔥 fuerza la reconfiguración
-    )
-
-@keras.saving.register_keras_serializable()
-def preprocess_effnet(x):
-    return pre_efficientnetb0(x)
-
-@keras.saving.register_keras_serializable()
-def preprocess_densenet(x):
-    return pre_densenet121(x)
+import onnxruntime as ort
+import onnx  # Opcional para chequeo
 
 class Model:
     def __init__(self):
-        self.__modelo: models.Model | None = None
+        self.session = None
     
-    def cargar(self, ruta_guardado):
-        configure_logging()
-        logger = logging.getLogger(__name__)
-        logger.info("Cargando modelo...")
-        self.__modelo = models.load_model(ruta_guardado)
-        logger.info(f"✅ Modelo cargado desde: {ruta_guardado}")
-
+    def cargar(self, model_path: str):
+        self.onnx_model = onnx.load(model_path)
+        onnx.checker.check_model(self.onnx_model)
+        # Crear sesión (usa 'CPUExecutionProvider' o 'CUDAExecutionProvider')
+        # Configurar providers (CPU por default, GPU si disponible)
+        providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+        self.session = ort.InferenceSession(model_path, providers=providers)
+    
     def predecir(self, imagen_array):
-        prediccion = self.__modelo.predict(imagen_array)
-        return prediccion[0][0]
+        input_name = self.session.get_inputs()[0].name
+        return self.session.run(None, {input_name: imagen_array})[0]

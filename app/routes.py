@@ -8,7 +8,7 @@ import numpy as np
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 model = Model()
-model.cargar("hibrido.keras")
+model.cargar("efficientnetb0.onnx")
 
 @router.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -39,7 +39,7 @@ async def detectar(request: Request):
         
         # Redimensionar y preprocesar
         image = image.resize((224, 224))
-        image_array = np.array(image)
+        image_array = np.array(image).astype(np.float32)
         
         # Añadir dimensión de batch
         image_array = np.expand_dims(image_array, axis=0)
@@ -55,4 +55,7 @@ async def detectar(request: Request):
             )
         }})
     except Exception as e:
+        # Traceback completo para debugging
+        import traceback
+        traceback.print_exc()
         return JSONResponse({"error": str(e)}, status_code=500)

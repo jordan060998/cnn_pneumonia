@@ -87,6 +87,14 @@ uploadArea.addEventListener("drop", (e) => {
     e.preventDefault();
     uploadArea.classList.remove("dragover");
     const file = e.dataTransfer.files[0];
+
+    if (!file) return;
+
+    // ✅ sincroniza el drop con el input file
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    fileInput.files = dataTransfer.files;
+
     handleFile(file);
 });
 btnPredecir.addEventListener("click", sendImage);
@@ -134,7 +142,7 @@ function sendImage() {
             probabilidadInput.value = data.data.confidence + "%";
       })
       .catch((error) => {
-            console.log('Intentando ocultar modal...');
+            console.log('Intentando ocultar modal... ' + error);
       })
       .finally(() => {
             console.log('Intentando ocultar modal en finally...');
