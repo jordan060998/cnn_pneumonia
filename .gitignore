@@ -7,5 +7,4 @@
 .venv/
 *.keras
 *.tflite
-*.onnx
 *.tar
